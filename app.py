@@ -1,3 +1,4 @@
+import html
 from flask import Flask, request, render_template, redirect, url_for, session
 import sqlite3
 
@@ -18,7 +19,8 @@ def index():
     conn = sqlite3.connect('database.db')
     c = conn.cursor()
     c.execute("SELECT text FROM comments")
-    comments = c.fetchall()
+    raw_comments = c.fetchall()
+    comments = [(html.escape(comment[0]),) for comment in raw_comments]
     conn.close()
     return render_template('index.html', comments=comments, logged_in='user' in session)
 
@@ -29,8 +31,8 @@ def login():
         password = request.form['password']
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
-        query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
-        c.execute(query)
+        query = "SELECT * FROM users WHERE username = ? AND password = ?"
+        c.execute(query, (username, password))
         user = c.fetchone()
         conn.close()
         if user:
@@ -53,6 +55,8 @@ def add_comment():
 
 @app.route('/admin')
 def admin_panel():
+    if session.get('user') != 'admin':
+        return "Доступ запрещен. Вы не администратор.", 403
     return "<h1>Секретная админ-панель</h1><p>Флаг: CTF{ADMIN_ACCESS_GRANTED}</p><a href='/'>На главную</a>"
 
 @app.route('/logout')
