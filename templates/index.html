@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><title>Мини-блог</title></head>
+<body>
+    <h1>Уязвимый блог</h1>
+    {% if logged_in %}
+        <p>Вы вошли как: {{ session['user'] }} | <a href="/logout">Выйти</a></p>
+        <form action="/add_comment" method="POST">
+            <input type="text" name="text" required placeholder="Введите комментарий">
+            <button type="submit">Отправить</button>
+        </form>
+    {% else %}
+        <a href="/login">Войти в систему</a>
+    {% endif %}
+    <hr>
+    <h3>Комментарии:</h3>
+    <ul>
+        {% for comment in comments %}
+            <li>{{ comment[0] | safe }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
